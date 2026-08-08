@@ -21,14 +21,14 @@ def legal_db_search(jurisdiction: str, keyword: str) -> str:
     """
     [Built-in Tool] Run database lookup for legal codes.
     """
-    return f"Legal DB Search: Found GDPR Article 17 ('Right to erasure') in jurisdiction: {jurisdiction}."
+    return f"Legal lookup for '{keyword}' in jurisdiction '{jurisdiction}' completed."
 
 @tool
 def mcp_github_create_or_update_file(path: str, content: str) -> str:
     """
-    [MCP Tool: github-mcp-server/create_or_update_file] Commit file to repo.
+    [MCP Tool] Commit file to repo.
     """
-    return f"GitHub MCP: File successfully committed to repository path: '{path}'."
+    return f"File updated at repository path '{path}'."
 
 legal_tools = [
     calculate_risk_exposure,

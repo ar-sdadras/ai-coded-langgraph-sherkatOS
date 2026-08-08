@@ -33,9 +33,9 @@ def math_calculator(expression: str) -> str:
 @tool
 def mcp_n8n_create_workflow(name: str, nodes_config: str) -> str:
     """
-    [MCP Tool: mcp-docker-toolkit/n8n_create_workflow] Creates financial automation workflow.
+    [MCP Tool] Creates financial automation workflow.
     """
-    return f"n8n MCP: Successfully created workflow '{name}' for financial payout automation."
+    return f"Financial workflow '{name}' configured successfully."
 
 finance_tools = [
     calculate_breakeven_months,

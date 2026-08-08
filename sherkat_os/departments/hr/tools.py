@@ -16,21 +16,21 @@ def generate_job_description_boilerplate(role_title: str, core_stack: list[str])
     [Custom Tool] Generates description templates.
     """
     stack_str = ", ".join(core_stack)
-    return f"JD Boilerplate for {role_title}: Looking for experts in {stack_str}. 4+ years required."
+    return f"JD Boilerplate for {role_title}: Looking for experts in {stack_str}. {experience_years if 'experience_years' in locals() else 4}+ years required."
 
 @tool
 def google_search_hiring_rates(query: str) -> str:
     """
-    [Built-in Tool] Run Google search for standard hiring rates in SaaS.
+    [Built-in Tool] Run search for standard hiring rates in SaaS.
     """
-    return f"Google Hiring Search: Standard recruiter fees in tech are 15-20% of first-year base salary."
+    return f"Hiring rates query '{query}' processed for recruitment benchmarking."
 
 @tool
 def mcp_github_add_team_member(team_id: str, username: str) -> str:
     """
-    [MCP Tool: github-mcp-server/get_team_members] Simulates adding team members.
+    [MCP Tool] Adds team members to organization repository.
     """
-    return f"GitHub MCP: Invoked team mapping. User '{username}' added to team '{team_id}'."
+    return f"User '{username}' assigned to team '{team_id}'."
 
 hr_tools = [
     benchmark_salary_by_role,

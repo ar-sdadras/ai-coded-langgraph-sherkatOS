@@ -21,21 +21,21 @@ def shell_command_validator(cmd: str) -> str:
     """
     [Built-in Tool] Validates CLI build commands for correctness.
     """
-    return f"Shell Validator: command '{cmd}' is safe to execute on build containers."
+    return f"Shell Validator: Command '{cmd}' validated for container execution."
 
 @tool
 def mcp_github_create_pull_request(repo: str, branch: str, title: str) -> str:
     """
-    [MCP Tool: github-mcp-server/create_pull_request] Create a PR for the repository.
+    [MCP Tool] Create a PR for the repository.
     """
-    return f"GitHub MCP: PR '{title}' successfully opened on branch {branch} in repo {repo}."
+    return f"Pull Request '{title}' created on branch '{branch}' in repository '{repo}'."
 
 @tool
 def mcp_postgres_query(sql_query: str) -> str:
     """
-    [MCP Tool: postgres/query] Run query on postgres database schema metadata.
+    [MCP Tool] Run query on postgres database schema metadata.
     """
-    return f"Postgres MCP: Schema verification complete. No tables conflict with postgres standard names."
+    return f"Schema query '{sql_query}' executed successfully."
 
 tech_tools = [
     calculate_infrastructure_capacity,

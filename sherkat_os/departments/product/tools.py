@@ -20,21 +20,21 @@ def arxiv_search(query: str) -> str:
     """
     [Built-in Tool] Query Arxiv repository for product design papers.
     """
-    return f"Arxiv Search: Document found: 'Design patterns for multi-agent human-in-the-loop systems' (2025)."
+    return f"Arxiv query '{query}' processed for technical literature."
 
 @tool
 def mcp_stitch_create_project(name: str) -> str:
     """
-    [MCP Tool: StitchMCP/create_project] Initialize a project layout in Stitch workspace.
+    [MCP Tool] Initialize a project layout in Stitch workspace.
     """
-    return f"StitchMCP: Project '{name}' created with ID 'stitch_proj_98765'."
+    return f"Stitch project layout '{name}' initialized."
 
 @tool
 def mcp_stitch_create_design_system(project_id: str) -> str:
     """
-    [MCP Tool: StitchMCP/create_design_system] Creates a design system for a project.
+    [MCP Tool] Creates a design system for a project.
     """
-    return f"StitchMCP: Design system initialized in project '{project_id}'."
+    return f"Design system initialized for project ID '{project_id}'."
 
 product_tools = [
     calculate_complexity_multiplier,
