@@ -51,7 +51,7 @@ def export_reports(final_state: dict, output_dir: str):
             f.write(json.dumps(reports.get(dept_key) or {}, indent=2))
             f.write("\n```\n\n")
             
-    console.print(f"[bold green]✓ Exported master reports to {json_path} and {md_path}[/bold green]")
+    console.print(f"[bold green][OK] Exported master reports to {json_path} and {md_path}[/bold green]")
 
 async def run_simulation(user_idea: str = None):
     console.print()
