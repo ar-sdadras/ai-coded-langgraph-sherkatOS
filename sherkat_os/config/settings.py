@@ -1,0 +1,33 @@
+from typing import Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class Settings(BaseSettings):
+    """
+    Enterprise settings management for SherkatOS.
+    Loads environment variables from a .env file or environment.
+    """
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore"
+    )
+    
+    # LLM Settings
+    openai_api_key: Optional[str] = None
+    google_api_key: Optional[str] = None
+    default_model: str = "gemini-3.6-flash" # Default fallback model
+    temperature: float = 0.2
+    fallback_to_mock: bool = True # Use schema-aware mock generator if no API keys present
+    
+    # Storage & Export Settings
+    output_dir: str = "output"
+    
+    # Graph Guardrail Settings
+    max_retries: int = 3
+    
+    # Logging Settings
+    log_level: str = "INFO"
+
+# Global settings instance
+settings = Settings()
+
