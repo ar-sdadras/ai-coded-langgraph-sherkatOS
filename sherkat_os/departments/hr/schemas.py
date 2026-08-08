@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class HiredRole(BaseModel):
     title: str = Field(..., description="Job title (e.g. Lead Agent Engineer).")
@@ -21,3 +21,8 @@ class HRStaffingPlan(BaseModel):
     roles_list: List[HiredRole] = Field(..., description="Detailed requirements for every open role.")
     hiring_timeline_description: str = Field(..., description="Overall timeline breakdown.")
     recruitment_milestones: List[RecruitmentMilestone] = Field(..., description="Recruitment operational checkpoints.")
+
+class CriticFeedback(BaseModel):
+    is_approved: bool = Field(..., description="True if report passes quality bar, False otherwise.")
+    feedback: str = Field(..., description="Detailed constructive feedback or approval summary.")
+    score: int = Field(..., description="Quality score from 1-10.")

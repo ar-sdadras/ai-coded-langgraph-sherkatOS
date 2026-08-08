@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class CompetitorDetails(BaseModel):
     name: str = Field(..., description="Name of the competitor.")
@@ -22,3 +22,11 @@ class MarketAnalysisReport(BaseModel):
     industry_drivers: List[str] = Field(..., description="Key drivers (technological, economic, social).")
     overall_viability_score: int = Field(..., description="Score 1-10 rating viability.")
     suggested_value_proposition: str = Field(..., description="Core value prop recommendation.")
+
+class CriticFeedback(BaseModel):
+    """
+    Structured feedback evaluation provided by Department Critic nodes.
+    """
+    is_approved: bool = Field(..., description="True if report passes quality bar, False otherwise.")
+    feedback: str = Field(..., description="Detailed constructive feedback or approval summary.")
+    score: int = Field(..., description="Quality score from 1-10.")

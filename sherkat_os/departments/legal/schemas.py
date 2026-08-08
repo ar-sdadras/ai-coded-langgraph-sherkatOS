@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class ComplianceRisk(BaseModel):
     area: str = Field(..., description="Regulatory area (e.g. GDPR, CCPA, HIPAA).")
@@ -18,3 +18,8 @@ class LegalAudit(BaseModel):
     privacy_requirements: List[PrivacyRequirement] = Field(..., description="Explicit privacy rules for user data.")
     terms_of_service_guidelines: List[str] = Field(..., description="Key guidelines that must be in the TOS.")
     disclaimer_requirements: List[str] = Field(..., description="Disclaimers that must be presented to users.")
+
+class CriticFeedback(BaseModel):
+    is_approved: bool = Field(..., description="True if report passes quality bar, False otherwise.")
+    feedback: str = Field(..., description="Detailed constructive feedback or approval summary.")
+    score: int = Field(..., description="Quality score from 1-10.")

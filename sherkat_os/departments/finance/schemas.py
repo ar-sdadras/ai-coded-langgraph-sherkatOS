@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class CostItem(BaseModel):
     category: str = Field(..., description="Category of expense (e.g. Infrastructure, Labor).")
@@ -20,3 +20,8 @@ class FinancialPlan(BaseModel):
     operating_costs: List[CostItem] = Field(..., description="Detailed list of monthly operating expenses.")
     pricing_tiers: List[PricingTier] = Field(..., description="Available customer pricing plans.")
     estimated_payback_period_months: int = Field(..., description="Number of months to reach break-even.")
+
+class CriticFeedback(BaseModel):
+    is_approved: bool = Field(..., description="True if report passes quality bar, False otherwise.")
+    feedback: str = Field(..., description="Detailed constructive feedback or approval summary.")
+    score: int = Field(..., description="Quality score from 1-10.")

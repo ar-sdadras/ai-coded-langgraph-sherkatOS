@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 class UserStory(BaseModel):
     as_a: str = Field(..., description="Role of user (e.g. As a Product Manager).")
@@ -22,3 +22,8 @@ class ProductRequirementDocument(BaseModel):
     scope_exclusions: List[str] = Field(..., description="Out of scope list.")
     success_metrics: List[str] = Field(..., description="KPIs to track success.")
     mvp_release_timeline: str = Field(..., description="Estimated release timeline description.")
+
+class CriticFeedback(BaseModel):
+    is_approved: bool = Field(..., description="True if report passes quality bar, False otherwise.")
+    feedback: str = Field(..., description="Detailed constructive feedback or approval summary.")
+    score: int = Field(..., description="Quality score from 1-10.")

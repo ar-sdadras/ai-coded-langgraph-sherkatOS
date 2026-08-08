@@ -4,7 +4,13 @@ from langchain_core.messages import AnyMessage
 
 class LinkageState(TypedDict):
     """
-    Top-level Orchestrator state mapping data flows between all 6 departments.
+    Top-level Orchestrator state mapping data flows between all 6 corporate departments:
+    1. Market Department (Market Intelligence & Feasibility)
+    2. Product Department (PRD & User Requirements)
+    3. Tech Department (Architecture Blueprint & Tech Stack)
+    4. Finance Department (Unit Economics & Financial Projections)
+    5. HR Department (Org Structure & Recruitment Roadmap)
+    6. Legal Department (Regulatory Audits & Compliance Framework)
     """
     product_idea: str
     market_analysis: Optional[Dict[str, Any]]
