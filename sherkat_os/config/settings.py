@@ -15,7 +15,16 @@ class Settings(BaseSettings):
     # LLM Settings
     openai_api_key: Optional[str] = None
     google_api_key: Optional[str] = None
-    default_model: str = "gemini-3.6-flash" # Default fallback model
+    
+    def get_effective_google_api_key(self) -> Optional[str]:
+        import os
+        return self.google_api_key or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+
+    def get_effective_openai_api_key(self) -> Optional[str]:
+        import os
+        return self.openai_api_key or os.getenv("OPENAI_API_KEY")
+
+    default_model: str = "gemini-1.5-flash"
     temperature: float = 0.2
     fallback_to_mock: bool = True # Use schema-aware mock generator if no API keys present
     
