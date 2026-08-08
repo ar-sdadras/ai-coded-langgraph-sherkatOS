@@ -1,4 +1,5 @@
 from typing import Optional
+import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -15,18 +16,17 @@ class Settings(BaseSettings):
     # LLM Settings
     openai_api_key: Optional[str] = None
     google_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
     
     def get_effective_google_api_key(self) -> Optional[str]:
-        import os
-        return self.google_api_key or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
+        return self.google_api_key or self.gemini_api_key or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 
     def get_effective_openai_api_key(self) -> Optional[str]:
-        import os
         return self.openai_api_key or os.getenv("OPENAI_API_KEY")
 
-    default_model: str = "gemini-1.5-flash"
+    default_model: str = "gemini-2.0-flash-lite"
     temperature: float = 0.2
-    fallback_to_mock: bool = True # Use schema-aware mock generator if no API keys present
+    fallback_to_mock: bool = False # Require live LLM API key; do not guess
     
     # Storage & Export Settings
     output_dir: str = "output"
@@ -39,4 +39,3 @@ class Settings(BaseSettings):
 
 # Global settings instance
 settings = Settings()
-
