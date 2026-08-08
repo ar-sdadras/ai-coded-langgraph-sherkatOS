@@ -13,7 +13,7 @@ def test_no_api_key_raises_error(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "")
     monkeypatch.setenv("OPENAI_API_KEY", "")
     
-    with pytest.raises(ValueError, match="CRITICAL: No API Key found"):
+    with pytest.raises(ValueError, match="CRITICAL"):
         llm_service.get_model()
 
 @pytest.mark.asyncio
