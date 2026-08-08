@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     def get_effective_openai_api_key(self) -> Optional[str]:
         return self.openai_api_key or os.getenv("OPENAI_API_KEY")
 
-    default_model: str = "gemini-2.0-flash-lite"
+    default_model: str = "gemini-3.5-flash-lite"
     temperature: float = 0.2
     fallback_to_mock: bool = False # Require live LLM API key; do not guess
     

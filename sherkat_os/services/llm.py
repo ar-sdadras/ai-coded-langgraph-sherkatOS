@@ -25,7 +25,7 @@ class LLMService:
         if google_key:
             try:
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                model_name = self.default_model if self.default_model else "gemini-2.0-flash-lite"
+                model_name = self.default_model if self.default_model else "gemini-3.5-flash-lite"
                 logger.info(f"Initializing live ChatGoogleGenerativeAI with model: '{model_name}'")
                 return ChatGoogleGenerativeAI(
                     model=model_name,
