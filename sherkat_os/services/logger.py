@@ -1,13 +1,14 @@
 import json
+import time
+from contextlib import contextmanager
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.columns import Columns
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
 class EnterpriseLogger:
     """
-    Premium structured logging using Rich formatting for SherkatOS.
+    Premium structured logging using Rich formatting with real-time spinners and status tracking for SherkatOS.
     """
     def __init__(self):
         self.console = Console()
@@ -24,6 +25,19 @@ class EnterpriseLogger:
     def log_node_start(self, node_name: str, info: str):
         self.console.print(f"[bold cyan]>>> [{node_name} Node][/bold cyan] {info}")
 
+    @contextmanager
+    def status(self, node_name: str, action: str):
+        """
+        Live interactive spinner context manager for long-running LLM API calls & graph steps.
+        Shows live animated spinner while waiting for LLM responses.
+        """
+        spinner_text = f"[bold cyan]⏳ [{node_name} Node][/bold cyan] [bold yellow]{action}...[/bold yellow]"
+        start_time = time.time()
+        with self.console.status(spinner_text, spinner="dots", spinner_style="bold cyan") as status_obj:
+            yield status_obj
+            elapsed = time.time() - start_time
+            self.console.print(f"[bold green]✓ [{node_name} Node][/bold green] {action} [dim]({elapsed:.1f}s)[/dim]")
+
     def log_critic_rejection(self, critic_name: str, feedback: str, attempt: int, max_attempts: int):
         table = Table(title="[bold red]Node Rejection[/bold red]", show_header=False, box=None)
         table.add_row("[bold yellow]Critic:[/bold yellow]", f"[red]{critic_name}[/red]")
@@ -39,7 +53,7 @@ class EnterpriseLogger:
         ))
 
     def log_critic_approval(self, critic_name: str, msg: str = "Approved"):
-        self.console.print(f"[bold green]OK [{critic_name} Approved][/bold green] {msg}")
+        self.console.print(f"[bold green]✓ [{critic_name} Approved][/bold green] {msg}")
 
     def log_report(self, title: str, report_data: Any, color: str = "green"):
         if hasattr(report_data, "model_dump"):
@@ -70,4 +84,3 @@ class EnterpriseLogger:
         self.console.print()
 
 logger = EnterpriseLogger()
-

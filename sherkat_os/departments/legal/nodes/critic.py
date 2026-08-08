@@ -8,8 +8,6 @@ from sherkat_os.services.llm import llm_service
 from sherkat_os.config.settings import settings
 
 async def legal_critic_node(state: LegalState) -> LegalState:
-    logger.log_node_start("Legal Critic", "Auditing Legal Compliance Framework...")
-    
     current_retries = state.get("retry_count", 0)
     max_retries = settings.max_retries
     legal_compliance = state.get("legal_compliance") or {}
@@ -18,10 +16,12 @@ async def legal_critic_node(state: LegalState) -> LegalState:
     structured_model = model.with_structured_output(CriticFeedback)
     
     prompt = f"Legal Audit to Evaluate: {json.dumps(legal_compliance)}\nIteration: {current_retries + 1} of {max_retries}"
-    eval_result: CriticFeedback = await structured_model.ainvoke([
-        SystemMessage(content=LEGAL_CRITIC_PROMPT),
-        HumanMessage(content=prompt)
-    ])
+    
+    with logger.status("Legal Critic", f"Auditing Legal Compliance Framework (Iteration {current_retries + 1}/{max_retries})"):
+        eval_result: CriticFeedback = await structured_model.ainvoke([
+            SystemMessage(content=LEGAL_CRITIC_PROMPT),
+            HumanMessage(content=prompt)
+        ])
     
     if current_retries >= max_retries:
         eval_result.is_approved = True

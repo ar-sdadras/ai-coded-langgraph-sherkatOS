@@ -8,8 +8,6 @@ from sherkat_os.services.llm import llm_service
 from sherkat_os.config.settings import settings
 
 async def market_critic_node(state: MarketState) -> MarketState:
-    logger.log_node_start("Market Critic", "Performing quality audit on Market Analysis Report...")
-    
     current_retries = state.get("retry_count", 0)
     max_retries = settings.max_retries
     market_report = state.get("market_report") or {}
@@ -18,10 +16,12 @@ async def market_critic_node(state: MarketState) -> MarketState:
     structured_model = model.with_structured_output(CriticFeedback)
     
     prompt = f"Market Report to Audit: {json.dumps(market_report)}\nIteration: {current_retries + 1} of {max_retries}"
-    eval_result: CriticFeedback = await structured_model.ainvoke([
-        SystemMessage(content=MARKET_CRITIC_PROMPT),
-        HumanMessage(content=prompt)
-    ])
+    
+    with logger.status("Market Critic", f"Auditing report (Iteration {current_retries + 1}/{max_retries})"):
+        eval_result: CriticFeedback = await structured_model.ainvoke([
+            SystemMessage(content=MARKET_CRITIC_PROMPT),
+            HumanMessage(content=prompt)
+        ])
     
     # Force pass if max retries reached to prevent infinite loops
     if current_retries >= max_retries:

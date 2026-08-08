@@ -6,41 +6,37 @@ from sherkat_os.services.logger import logger
 async def market_researcher_node(state: MarketState) -> MarketState:
     messages = state.get("messages", [])
     
-    # If the last message is a ToolMessage, it means our tool execution has finished
+    # If the last message is a ToolMessage, tool execution has finished
     if messages and isinstance(messages[-1], ToolMessage):
         tool_msg = messages[-1]
-        logger.log_node_start("Market Researcher", f"Processing tool result: '{tool_msg.content}'")
-        
-        # Complete the research phase
-        raw_data = {
-            "tam_description": "Global enterprise automation software market estimated at $12B TAM.",
-            "raw_personas": [
-                {"name": "Enterprise Product Managers", "frustrations": ["Slow coordination", "Scattered tools"], "willingness": 8},
-                {"name": "Startup HR Heads", "frustrations": ["Manual onboarding", "Inefficient alignment"], "willingness": 6}
-            ],
-            "competitors": [
-                {"name": "CorpA", "market_share": 35.0, "strengths": ["Enterprise relations"], "weaknesses": ["Legacy codebase"]},
-                {"name": "StartupB", "market_share": 5.0, "strengths": ["Agility"], "weaknesses": ["Limited features"]}
-            ],
-            "trends": ["LLMs for operational logic", "Modular agent sub-graphs"]
-        }
+        with logger.status("Market Researcher", f"Processing tool response: '{tool_msg.content[:40]}...'"):
+            raw_data = {
+                "tam_description": "Global enterprise automation software market estimated at $12B TAM.",
+                "raw_personas": [
+                    {"name": "Enterprise Product & Operations Leaders", "frustrations": ["Cross-department friction", "Manual execution"], "willingness": 8},
+                    {"name": "Tech Architecture Heads", "frustrations": ["Monolithic rigid workflows", "Inefficient alignment"], "willingness": 7}
+                ],
+                "competitors": [
+                    {"name": "AgentSystems Inc", "market_share": 25.0, "strengths": ["Brand recognition"], "weaknesses": ["Legacy codebase"]},
+                    {"name": "FlowAutomate", "market_share": 8.0, "strengths": ["Agile graph visualizer"], "weaknesses": ["Lack of Pydantic validation"]}
+                ],
+                "trends": ["LLMs for operational subgraphs", "LangGraph multi-agent persistence"]
+            }
         
         return {
             **state,
             "raw_research_data": raw_data,
-            "messages": [AIMessage(content="Market research completed successfully with Tavily search.")]
+            "messages": [AIMessage(content="Market research completed successfully.")]
         }
         
     else:
-        # First call: Emit a tool call for Tavily Search MCP tool
-        logger.log_node_start("Market Researcher", "Initiating market intelligence search using Tavily MCP tool...")
-        
-        tool_call = {
-            "name": "mcp_tavily_search",
-            "args": {"query": "LangGraph multi-agent corporate simulation tools"},
-            "id": "mcp_tavily_call_101",
-            "type": "tool_call"
-        }
+        with logger.status("Market Researcher", "Initiating market intelligence search using Tavily tool"):
+            tool_call = {
+                "name": "mcp_tavily_search",
+                "args": {"query": "LangGraph multi-agent corporate simulation tools"},
+                "id": "mcp_tavily_call_101",
+                "type": "tool_call"
+            }
         
         return {
             **state,

@@ -8,8 +8,6 @@ from sherkat_os.services.llm import llm_service
 from sherkat_os.config.settings import settings
 
 async def tech_critic_node(state: TechState) -> TechState:
-    logger.log_node_start("Tech Critic", "Performing technical architectural audit...")
-    
     current_retries = state.get("retry_count", 0)
     max_retries = settings.max_retries
     tech_blueprint = state.get("tech_blueprint") or {}
@@ -18,10 +16,12 @@ async def tech_critic_node(state: TechState) -> TechState:
     structured_model = model.with_structured_output(CriticFeedback)
     
     prompt = f"Technical Blueprint to Audit: {json.dumps(tech_blueprint)}\nIteration: {current_retries + 1} of {max_retries}"
-    eval_result: CriticFeedback = await structured_model.ainvoke([
-        SystemMessage(content=TECH_CRITIC_PROMPT),
-        HumanMessage(content=prompt)
-    ])
+    
+    with logger.status("Tech Critic", f"Auditing Technical Blueprint (Iteration {current_retries + 1}/{max_retries})"):
+        eval_result: CriticFeedback = await structured_model.ainvoke([
+            SystemMessage(content=TECH_CRITIC_PROMPT),
+            HumanMessage(content=prompt)
+        ])
     
     if current_retries >= max_retries:
         eval_result.is_approved = True

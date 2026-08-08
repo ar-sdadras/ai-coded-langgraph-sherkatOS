@@ -8,8 +8,6 @@ from sherkat_os.services.llm import llm_service
 from sherkat_os.config.settings import settings
 
 async def product_critic_node(state: ProductState) -> ProductState:
-    logger.log_node_start("Product Critic", "Auditing Product Requirement Document...")
-    
     current_retries = state.get("retry_count", 0)
     max_retries = settings.max_retries
     prd_final = state.get("prd_final") or {}
@@ -18,10 +16,12 @@ async def product_critic_node(state: ProductState) -> ProductState:
     structured_model = model.with_structured_output(CriticFeedback)
     
     prompt = f"PRD to Audit: {json.dumps(prd_final)}\nIteration: {current_retries + 1} of {max_retries}"
-    eval_result: CriticFeedback = await structured_model.ainvoke([
-        SystemMessage(content=PRODUCT_CRITIC_PROMPT),
-        HumanMessage(content=prompt)
-    ])
+    
+    with logger.status("Product Critic", f"Auditing PRD (Iteration {current_retries + 1}/{max_retries})"):
+        eval_result: CriticFeedback = await structured_model.ainvoke([
+            SystemMessage(content=PRODUCT_CRITIC_PROMPT),
+            HumanMessage(content=prompt)
+        ])
     
     if current_retries >= max_retries:
         eval_result.is_approved = True

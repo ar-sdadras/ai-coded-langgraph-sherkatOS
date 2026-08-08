@@ -8,8 +8,6 @@ from sherkat_os.services.llm import llm_service
 from sherkat_os.config.settings import settings
 
 async def finance_critic_node(state: FinanceState) -> FinanceState:
-    logger.log_node_start("Finance Critic", "Auditing Financial Plan and unit economics...")
-    
     current_retries = state.get("retry_count", 0)
     max_retries = settings.max_retries
     financial_model = state.get("financial_model") or {}
@@ -18,10 +16,12 @@ async def finance_critic_node(state: FinanceState) -> FinanceState:
     structured_model = model.with_structured_output(CriticFeedback)
     
     prompt = f"Financial Plan to Audit: {json.dumps(financial_model)}\nIteration: {current_retries + 1} of {max_retries}"
-    eval_result: CriticFeedback = await structured_model.ainvoke([
-        SystemMessage(content=FINANCE_CRITIC_PROMPT),
-        HumanMessage(content=prompt)
-    ])
+    
+    with logger.status("Finance Critic", f"Auditing Financial Plan (Iteration {current_retries + 1}/{max_retries})"):
+        eval_result: CriticFeedback = await structured_model.ainvoke([
+            SystemMessage(content=FINANCE_CRITIC_PROMPT),
+            HumanMessage(content=prompt)
+        ])
     
     if current_retries >= max_retries:
         eval_result.is_approved = True
