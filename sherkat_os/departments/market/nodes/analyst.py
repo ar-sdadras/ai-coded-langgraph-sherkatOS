@@ -1,34 +1,36 @@
 import json
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from sherkat_os.departments.market.state import MarketState
+from sherkat_os.departments.market.schemas import MarketAnalysisReport
+from sherkat_os.departments.market.prompts import MARKET_ANALYST_PROMPT
 from sherkat_os.services.logger import logger
+from sherkat_os.services.llm import llm_service
 
 async def market_analyst_node(state: MarketState) -> MarketState:
-    logger.log_node_start("Market Analyst", "Synthesizing raw research into structured analysis...")
+    logger.log_node_start("Market Analyst", "Synthesizing raw research into structured MarketAnalysisReport...")
     
     raw_data = state.get("raw_research_data") or {}
+    product_idea = state.get("product_idea", "Corporate AI Orchestration Sandbox")
+    critic_feedback = state.get("critic_feedback")
     
-    report = {
-        "market_size_description": raw_data.get("tam_description", "Large TAM"),
-        "personas": [
-            {"segment_name": "Product Managers", "pain_points": ["Manual coordination"], "willingness_to_pay_rating": 8}
-        ],
-        "competitor_landscape": [
-            {"name": "CorpA", "market_share_percentage": 35.0, "key_strengths": ["Sales"], "vulnerabilities": ["Legacy tech"]}
-        ],
-        "industry_drivers": raw_data.get("trends", []),
-        "overall_viability_score": 8,
-        "suggested_value_proposition": "Provide fully autonomous agent coordination simulation."
-    }
+    prompt = f"Product Idea: {product_idea}\nRaw Research Data: {json.dumps(raw_data)}"
+    if critic_feedback:
+        prompt += f"\n\nCRITIC REFINEMENT DIRECTIVE: {critic_feedback}"
+        logger.log_node_start("Market Analyst", f"Applying critic feedback refinement...")
+
+    model = llm_service.get_model()
+    structured_model = model.with_structured_output(MarketAnalysisReport)
     
-    if state.get("critic_feedback"):
-        logger.log_node_start("Market Analyst", f"Refining report based on critic feedback: '{state['critic_feedback']}'")
-        report["suggested_value_proposition"] += " (With enterprise-grade security & compliance integrations)"
-        report["overall_viability_score"] = 9
-        
-    msg = AIMessage(content=f"Generated market report: {json.dumps(report)}")
+    report_obj: MarketAnalysisReport = await structured_model.ainvoke([
+        SystemMessage(content=MARKET_ANALYST_PROMPT),
+        HumanMessage(content=prompt)
+    ])
+    
+    report_dict = report_obj.model_dump()
+    msg = AIMessage(content=f"Generated Market Analysis Report (Viability Score: {report_obj.overall_viability_score}/10).")
+    
     return {
         **state,
-        "market_report": report,
+        "market_report": report_dict,
         "messages": [msg]
     }

@@ -1,45 +1,36 @@
 import json
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from sherkat_os.departments.hr.state import HRState
+from sherkat_os.departments.hr.schemas import HRStaffingPlan
+from sherkat_os.departments.hr.prompts import HR_PLANNER_PROMPT
 from sherkat_os.services.logger import logger
+from sherkat_os.services.llm import llm_service
 
 async def hr_planner_node(state: HRState) -> HRState:
-    logger.log_node_start("HR Planner", "Formatting staffing roadmap and milestones...")
+    logger.log_node_start("HR Planner", "Synthesizing staffing requirements into HRStaffingPlan...")
     
-    draft = state.get("hr_draft") or {}
+    prd = state.get("prd") or {}
+    financial_model = state.get("financial_model") or {}
+    critic_feedback = state.get("critic_feedback")
     
-    hr_plan = {
-        "total_headcount_target": draft.get("headcount", 3),
-        "roles_list": [
-            {
-                "title": role["title"],
-                "department": role["dept"],
-                "years_experience_required": role["exp"],
-                "core_skills": role["skills"],
-                "target_salary_range_usd": role["salary"]
-            } for role in draft.get("roles", [])
-        ],
-        "hiring_timeline_description": "First 4 weeks: Engineer sourcing. Next 2 weeks: Onboarding.",
-        "recruitment_milestones": [
-            {"milestone_name": "Source Lead Agent Engineer", "estimated_weeks_to_fill": 4, "priority": "Critical"},
-            {"milestone_name": "Source Next.js Specialist", "estimated_weeks_to_fill": 3, "priority": "High"}
-        ]
-    }
+    prompt = f"PRD: {json.dumps(prd)}\nFinancial Model: {json.dumps(financial_model)}"
+    if critic_feedback:
+        prompt += f"\n\nCRITIC REFINEMENT DIRECTIVE: {critic_feedback}"
+        logger.log_node_start("HR Planner", "Refining HR plan based on critic feedback...")
+
+    model = llm_service.get_model()
+    structured_model = model.with_structured_output(HRStaffingPlan)
     
-    if state.get("critic_feedback"):
-        logger.log_node_start("HR Planner", f"Refining staffing plan based on critic feedback: '{state['critic_feedback']}'")
-        hr_plan["roles_list"].append({
-            "title": "Part-time UI/UX Designer",
-            "department": "Design",
-            "years_experience_required": 3,
-            "core_skills": ["Figma", "Design Systems"],
-            "target_salary_range_usd": "$40k - $60k"
-        })
-        hr_plan["total_headcount_target"] += 1
-        
-    msg = AIMessage(content=f"Generated HR plan: {json.dumps(hr_plan)}")
+    plan_obj: HRStaffingPlan = await structured_model.ainvoke([
+        SystemMessage(content=HR_PLANNER_PROMPT),
+        HumanMessage(content=prompt)
+    ])
+    
+    plan_dict = plan_obj.model_dump()
+    msg = AIMessage(content="Generated HR & Operations Staffing Plan.")
+    
     return {
         **state,
-        "hr_plan": hr_plan,
+        "hr_plan": plan_dict,
         "messages": [msg]
     }

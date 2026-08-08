@@ -1,25 +1,35 @@
 import json
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from sherkat_os.departments.tech.state import TechState
+from sherkat_os.departments.tech.schemas import TechnicalBlueprint
+from sherkat_os.departments.tech.prompts import TECH_PLANNER_PROMPT
 from sherkat_os.services.logger import logger
+from sherkat_os.services.llm import llm_service
 
 async def technical_planner_node(state: TechState) -> TechState:
-    tech_stack = state.get("tech_stack") or {}
-    logger.log_node_start("Technical Planner", f"Drafting implementation plan based on stack: {tech_stack.get('backend_tech')}")
+    logger.log_node_start("Technical Planner", "Synthesizing PRD into TechnicalBlueprint...")
     
-    blueprint = {
-        "database_schema_concept": "Table: org_states, Table: agent_messages, Table: runs",
-        "core_api_endpoints": [
-            {"method": "POST", "path": "/api/v1/run", "description": "Trigger an autonomous simulation run."},
-            {"method": "GET", "path": "/api/v1/run/{id}/status", "description": "Check run state and messages."}
-        ],
-        "infrastructure_and_deployment": "Dockerized container on AWS ECS Fargate, managed PostgreSQL RDS",
-        "mvp_roadmap_phases": ["Phase 1: Sub-graph definition and State orchestration", "Phase 2: API integration"]
-    }
+    prd = state.get("prd") or {}
+    critic_feedback = state.get("critic_feedback")
     
-    msg = AIMessage(content=f"Created blueprint: {json.dumps(blueprint)}")
+    prompt = f"Product Requirements Document (PRD): {json.dumps(prd)}"
+    if critic_feedback:
+        prompt += f"\n\nCRITIC REFINEMENT DIRECTIVE: {critic_feedback}"
+        logger.log_node_start("Technical Planner", "Refining technical blueprint based on critic feedback...")
+
+    model = llm_service.get_model()
+    structured_model = model.with_structured_output(TechnicalBlueprint)
+    
+    blueprint_obj: TechnicalBlueprint = await structured_model.ainvoke([
+        SystemMessage(content=TECH_PLANNER_PROMPT),
+        HumanMessage(content=prompt)
+    ])
+    
+    blueprint_dict = blueprint_obj.model_dump()
+    msg = AIMessage(content="Generated Technical Blueprint & Architecture Roadmap.")
+    
     return {
         **state,
-        "tech_blueprint": blueprint,
+        "tech_blueprint": blueprint_dict,
         "messages": [msg]
     }

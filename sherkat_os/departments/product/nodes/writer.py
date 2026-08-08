@@ -1,29 +1,35 @@
 import json
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, SystemMessage, HumanMessage
 from sherkat_os.departments.product.state import ProductState
+from sherkat_os.departments.product.schemas import ProductRequirementDocument
+from sherkat_os.departments.product.prompts import PRODUCT_WRITER_PROMPT
 from sherkat_os.services.logger import logger
+from sherkat_os.services.llm import llm_service
 
 async def product_writer_node(state: ProductState) -> ProductState:
-    logger.log_node_start("Product Writer", "Drafting complete PRD document...")
+    logger.log_node_start("Product Writer", "Synthesizing market analysis into ProductRequirementDocument...")
     
-    draft = state.get("prd_draft") or {}
+    market_analysis = state.get("market_analysis") or {}
+    critic_feedback = state.get("critic_feedback")
     
-    prd = {
-        "product_vision": draft.get("vision", "Default Vision"),
-        "key_features": draft.get("features", []),
-        "scope_exclusions": ["Mobile application integration", "Hardware simulations"],
-        "success_metrics": ["Workflow completion rate > 95%", "State synchronization latency < 200ms"],
-        "mvp_release_timeline": "6 weeks from kickoff"
-    }
+    prompt = f"Market Analysis Input: {json.dumps(market_analysis)}"
+    if critic_feedback:
+        prompt += f"\n\nCRITIC REFINEMENT DIRECTIVE: {critic_feedback}"
+        logger.log_node_start("Product Writer", "Refining PRD based on critic feedback...")
+
+    model = llm_service.get_model()
+    structured_model = model.with_structured_output(ProductRequirementDocument)
     
-    if state.get("critic_feedback"):
-        logger.log_node_start("Product Writer", f"Refining PRD based on critic feedback: '{state['critic_feedback']}'")
-        prd["scope_exclusions"].append("Multi-cloud clustering deployments (post-MVP)")
-        prd["success_metrics"].append("Zero state sync conflicts on retry loops")
-        
-    msg = AIMessage(content=f"Generated final PRD: {json.dumps(prd)}")
+    prd_obj: ProductRequirementDocument = await structured_model.ainvoke([
+        SystemMessage(content=PRODUCT_WRITER_PROMPT),
+        HumanMessage(content=prompt)
+    ])
+    
+    prd_dict = prd_obj.model_dump()
+    msg = AIMessage(content="Generated Product Requirement Document (PRD).")
+    
     return {
         **state,
-        "prd_final": prd,
+        "prd_final": prd_dict,
         "messages": [msg]
     }
